@@ -1,0 +1,25 @@
+{
+  "name": "gachabot",
+  "version": "1.0.0",
+  "description": "Keeps track of your GachaMon collection so you can share it with others!",
+  "homepage": "https://github.com/champred/gachabot#readme",
+  "bugs": {
+    "url": "https://github.com/champred/gachabot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/champred/gachabot.git"
+  },
+  "license": "MIT",
+  "author": "Champion Red",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "discord-interactions": "^4.3.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0"
+  }
+}

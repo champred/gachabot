@@ -1,6 +1,6 @@
 import {DatabaseSync} from 'node:sqlite'
 
-export const db = new DatabaseSync('db.sqlite3')
+export const db = new DatabaseSync('db/db.sqlite3')
 
 db.exec(`CREATE TABLE IF NOT EXISTS collection(
     id INTEGER PRIMARY KEY,

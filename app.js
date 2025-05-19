@@ -31,7 +31,7 @@ function generateRatings() {
 app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async function (req, res) {
 	// Interaction id, type and data
 	const { id, type, data, message } = req.body;
-	const userId = req.body.context === 0 ? req.body.member.user.id : req.body.user.id;
+	let userId = req.body.context === 0 ? req.body.member.user.id : req.body.user.id;
 	/**
 	 * Handle verification requests
 	 */
@@ -54,9 +54,9 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				}
 			})
 		} else if (custom_id === 'view_collection') {
-			const mentionId = message.mentions[0].id
+			userId = message.mentions[0].id
 			const stmt = db.prepare('SELECT gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10;')
-			const results = stmt.all(mentionId)
+			const results = stmt.all(userId)
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
@@ -76,10 +76,10 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				}
 			})
 		} else if (custom_id === 'next_page') {
-			const mentionId = message.mentions[0].id
+			userId = message.mentions[0].id
 			const stmt = db.prepare('SELECT gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10 OFFSET ?;')
 			let page = message.components[0].id
-			const results = stmt.all(mentionId, (page++) * 10)
+			const results = stmt.all(userId, (page++) * 10)
 			return res.send({
 				type: InteractionResponseType.UPDATE_MESSAGE,
 				data: {
@@ -145,6 +145,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				},
 			});
 		} else if (name === 'collection') {
+			if (options && options[0]) userId = options[0].value
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {

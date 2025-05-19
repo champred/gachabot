@@ -51,7 +51,12 @@ const ADD_COMMAND = {
 const VIEW_COMMAND = {
 	name: 'collection',
 	type: 1,
-	description: 'Share your collection of GachaMon for others to view!'
+	description: 'Share your collection of GachaMon for others to view!',
+	options: [{
+		type: 6,
+		name: 'owner',
+		description: 'The user who owns the collection.'
+	}]
 }
 
 InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND]);

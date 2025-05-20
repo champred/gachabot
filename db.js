@@ -5,7 +5,7 @@ export const db = new DatabaseSync('db/db.sqlite3')
 db.exec(`CREATE TABLE IF NOT EXISTS collection(
     id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    gachamon TEXT NOT NULL UNIQUE
+    gachamon BLOB NOT NULL UNIQUE
 );`)
 db.exec(`CREATE TABLE IF NOT EXISTS ratings(
     id INTEGER PRIMARY KEY,

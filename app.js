@@ -105,7 +105,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		const { name, resolved, options } = data;
 
 		if (name === 'addmon') {
-			const data = decodeMon(options[0].value)
+			const buf = Buffer.from(options[0].value, 'base64')
+			const data = decodeMon(buf)
 			if (!data) {
 				return res.send({
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -116,8 +117,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				})
 			}
 			const stmt = db.prepare('INSERT OR IGNORE INTO collection(user_id,gachamon) VALUES(?,?);')
-			const { changes, lastInsertRowid } = stmt.run(userId, options[0].value)
-			console.dir(data)
+			const { changes, lastInsertRowid } = stmt.run(userId, buf)
 			if (!changes) {
 				return res.send({
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -144,6 +144,47 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 					}]
 				},
 			});
+		} else if (name === 'addmons') {
+			const { filename, url, size } = Object.values(resolved.attachments)[0]
+			if (!filename.endsWith('.gccg')) {
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: "The file type is incorrect!"
+					}
+				})
+			}
+			let buf
+			try {
+				const attachment = await fetch(url)
+				const arr = await attachment.bytes()
+				buf = Buffer.from(arr)
+			} catch (err) {
+				console.error(err)
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: "Failed to download attachment!"
+					}
+				})
+			}
+			let collection = []
+			for (let pos = 0; pos < size; pos += 31) { //TODO don't hardcode
+				const mon = decodeMon(buf, pos)
+				if (mon) collection.push(userId, buf.subarray(pos, pos + 31))
+			}
+			const stmt = db.prepare(`INSERT OR IGNORE INTO collection(user_id,gachamon)
+				VALUES ${'(?,?),'.repeat(collection.length).slice(0, -1)};`)
+			stmt.run(...collection)
+			return res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					flags: InteractionResponseFlags.EPHEMERAL,
+					content: "Added GachaMon from file!"
+				}
+			})
 		} else if (name === 'collection') {
 			if (options && options[0]) userId = options[0].value
 			return res.send({

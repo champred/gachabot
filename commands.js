@@ -48,6 +48,18 @@ const ADD_COMMAND = {
 	}]
 }
 
+const FILE_COMMAND = {
+	name: 'addmons',
+	type: 1,
+	description: 'Add an entire GachaMon collection!',
+	options: [{
+		type: 11,
+		name: 'file',
+		description: 'Collection file (.gccg extension)',
+		required: true
+	}]
+}
+
 const VIEW_COMMAND = {
 	name: 'collection',
 	type: 1,
@@ -59,4 +71,4 @@ const VIEW_COMMAND = {
 	}]
 }
 
-InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND]);
+InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND]);

@@ -83,12 +83,12 @@ function binaryUnpack(format, stream, pos = 0) {
 let formats = []
 formats[1] = "BIHBBBHBBBIIII"
 
-export default function decodeMon(str) {
+export default function decodeMon(dec, pos = 0) {
+	let data
 	try {
-		const dec = Buffer.from(str, 'base64')
 		const [version] = binaryUnpack("B", dec)
-		const unp = binaryUnpack(formats[version], dec)
-		const data = {
+		const unp = binaryUnpack(formats[version], dec, pos)
+		data = {
 			version: version,
 			name: unp[2] & 0x7ff,
 			hp: unp[10] & 0x3ff,
@@ -121,7 +121,10 @@ export default function decodeMon(str) {
 		data.ability = abilities[data.ability - 1].name
 		data.moves = data.moves.map(m => moves[m - 1].name)
 		return data
-	} catch {
+	} catch (err) {
+		console.error(err)
 		return null
+	} finally {
+		console.dir(data)
 	}
 }

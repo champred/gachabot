@@ -61,15 +61,21 @@ const FILE_COMMAND = {
 	}]
 }
 
+const CLEAR_COMMAND = {
+	name: 'clearmons',
+	type: 1,
+	description: 'Clear out your GachaMon collection!'
+}
+
 const VIEW_COMMAND = {
 	name: 'collection',
 	type: 1,
-	description: 'Share your collection of GachaMon for others to view!',
+	description: 'Access a collection of GachaMon for viewing!',
 	options: [{
 		type: 6,
 		name: 'owner',
-		description: 'The user who owns the collection.'
+		description: 'The user who owns the collection. Defaults to your own.'
 	}]
 }
 
-InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND]);
+InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND, CLEAR_COMMAND]);

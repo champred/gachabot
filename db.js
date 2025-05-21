@@ -13,5 +13,5 @@ db.exec(`CREATE TABLE IF NOT EXISTS ratings(
     mon_id INTEGER NOT NULL,
     score INTEGER NOT NULL,
     UNIQUE(user_id,mon_id),
-    FOREIGN KEY(mon_id) REFERENCES collection(id)
+    FOREIGN KEY(mon_id) REFERENCES collection(id) ON DELETE CASCADE
 );`)

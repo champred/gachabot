@@ -53,6 +53,26 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 					flags: InteractionResponseFlags.EPHEMERAL
 				}
 			})
+		} else if (custom_id === 'remove_mon') {
+			const monId = message.components[0].id
+			const stmt = db.prepare('DELETE FROM collection WHERE user_id=? AND id=?;')
+			const {changes} = stmt.run(userId, monId)
+			if (!changes) {
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						content: 'You must own this GachaMon to remove it!',
+						flags: InteractionResponseFlags.EPHEMERAL
+					}
+				})
+			}
+			return res.send({
+				type: InteractionResponseType.UPDATE_MESSAGE,
+				data: {
+					content: 'This GachaMon has been removed!',
+					components: []
+				}
+			})
 		} else if (custom_id === 'view_collection') {
 			userId = message.mentions[0].id
 			const stmt = db.prepare('SELECT gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10;')
@@ -141,9 +161,27 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 							placeholder: "What do you think the rating should be?",
 							options: generateRatings()
 						}]
+					}, {
+						type: MessageComponentTypes.ACTION_ROW,
+						components: [{
+							type: MessageComponentTypes.BUTTON,
+							style: ButtonStyleTypes.DANGER,
+							label: 'Remove',
+							custom_id: 'remove_mon'
+						}]
 					}]
 				},
 			});
+		} else if (name === 'clearmons') {
+			const stmt = db.prepare('DELETE FROM collection WHERE user_id=?;')
+			const {changes} = stmt.run(userId)
+			return res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					flags: InteractionResponseFlags.EPHEMERAL,
+					content: `Removed ${changes} GachaMon from your collection!`
+				}
+			})
 		} else if (name === 'addmons') {
 			const { filename, url, size } = Object.values(resolved.attachments)[0]
 			if (!filename.endsWith('.gccg')) {

@@ -90,7 +90,7 @@ export default function decodeMon(dec, pos = 0) {
 		const unp = binaryUnpack(formats[version], dec, pos)
 		data = {
 			version: version,
-			name: unp[2] & 0x7ff,
+			species: unp[2] & 0x7ff,
 			hp: unp[10] & 0x3ff,
 			lv: unp[3] & 0x7f,
 			atk: (unp[10] & (0x3ff << 10)) >> 10,
@@ -115,9 +115,9 @@ export default function decodeMon(dec, pos = 0) {
 				(unp[13] & (0x1f << 16)) >> 16//day
 			)
 		}
-		data.bst = pokemon[data.name - 1].bst
-		data.types = pokemon[data.name - 1].types
-		data.name = pokemon[data.name - 1].name
+		data.bst = pokemon[data.species - 1].bst
+		data.types = pokemon[data.species - 1].types
+		data.name = pokemon[data.species - 1].name
 		data.ability = abilities[data.ability - 1].name
 		data.moves = data.moves.map(m => moves[m - 1].name)
 		return data

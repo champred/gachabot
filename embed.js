@@ -64,7 +64,7 @@ function calculateStars(rating) {
 
 export default function createEmbed(data) {
 	return {
-		title: '⭐'.repeat(calculateStars(data.score)),
+		title: '⭐ '.repeat(calculateStars(data.score)) + data.name,
 		color: colors[data.types[0]],
 		fields: [{
 			name: 'Ability',
@@ -81,10 +81,11 @@ export default function createEmbed(data) {
 		}],
 		description: `Level ${data.lv} stats: ${formatStats(data)}`,
 		thumbnail: {
-			url: `https://img.pokemondb.net/sprites/emerald/${data.shiny ? 'shiny' : 'normal'}/${data.name.toLowerCase()}.png`
+			url: `https://storage.googleapis.com/gachamon_images/sprites_anim/${encodeURIComponent(data.name.toLowerCase())}.gif`
 		},
 		footer: {
-			text: `v${data.version}, captured on ${data.date.toDateString()}`
+			text: `v${data.version}, captured on ${data.date.toDateString()}`,
+			icon_url: `https://storage.googleapis.com/gachamon_images/sprites_mons/${data.species}.png`
 		}
 	}
 }

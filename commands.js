@@ -1,5 +1,10 @@
 import 'dotenv/config';
 
+const reqHeaders = new Headers({
+	Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
+	'Content-Type': 'application/json; charset=UTF-8',
+})
+
 export async function DiscordRequest(endpoint, options) {
 	// append endpoint to root API URL
 	const url = 'https://discord.com/api/v10/' + endpoint;
@@ -7,11 +12,7 @@ export async function DiscordRequest(endpoint, options) {
 	if (options.body) options.body = JSON.stringify(options.body);
 	// Use fetch to make requests
 	const res = await fetch(url, {
-		headers: {
-			Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
-			'Content-Type': 'application/json; charset=UTF-8',
-			'User-Agent': 'DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)',
-		},
+		headers: reqHeaders,
 		...options
 	});
 	// throw API errors

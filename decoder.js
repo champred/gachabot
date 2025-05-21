@@ -1,6 +1,13 @@
 import pokemon from './data/pokemon.json' with {type: 'json'}
 import abilities from './data/abilities.json' with {type: 'json'}
 import moves from './data/moves.json' with {type: 'json'}
+//TODO find a way to do this dynamically
+moves[354].name = "Disarming Voice"
+moves[355].name = "Draining Kiss"
+moves[356].name = "Play Rough"
+moves[357].name = "Fairy Wind"
+moves[358].name = "Moonblast"
+moves[359].name = "Dazzling Gleam"
 
 function binaryUnpack(format, stream, pos = 0) {
 	const vars = [];
@@ -119,7 +126,7 @@ export default function decodeMon(dec, pos = 0) {
 		data.types = pokemon[data.species - 1].types
 		data.name = pokemon[data.species - 1].name
 		data.ability = abilities[data.ability - 1].name
-		data.moves = data.moves.map(m => moves[m - 1].name)
+		data.moves = data.moves.map(m => (moves[m - 1] || {}).name)
 		return data
 	} catch (err) {
 		console.error(err)

@@ -11,6 +11,7 @@ import {
 import createEmbed from './embed.js'
 import decodeMon from './decoder.js'
 import {db} from './db.js'
+import DiscordRequest from './commands.js';
 
 // Create an express app
 const app = express();
@@ -30,7 +31,7 @@ function generateRatings() {
 
 app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async function (req, res) {
 	// Interaction id, type and data
-	const { id, type, data, message } = req.body;
+	const { token, type, data, message } = req.body;
 	let userId = req.body.context === 0 ? req.body.member.user.id : req.body.user.id;
 	/**
 	 * Handle verification requests
@@ -65,6 +66,16 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 						flags: InteractionResponseFlags.EPHEMERAL
 					}
 				})
+			}
+			res.send({
+				type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE
+			})
+			try {
+				await DiscordRequest(`/webhooks/${process.env.APP_ID}/${token}/messages/${message.id}`, {
+					method: 'DELETE'
+				})
+			} catch (err) {
+				console.error(err)
 			}
 			return res.send({
 				type: InteractionResponseType.UPDATE_MESSAGE,
@@ -147,31 +158,47 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 					}
 				})
 			}
-			return res.send({
+			
+			res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
 					content: "New GachaMon added!",
 					embeds: [createEmbed(data)],
-					components: [{
-						type: MessageComponentTypes.ACTION_ROW,
-						id: lastInsertRowid,
+				}
+			})
+			try {
+				await DiscordRequest(`/webhooks/${process.env.APP_ID}/${token}`, {
+					method: 'POST',
+					body: {
+						flags: InteractionResponseFlags.EPHEMERAL | InteractionResponseFlags.IS_COMPONENTS_V2,
 						components: [{
-							type: MessageComponentTypes.STRING_SELECT,
-							custom_id: "user_rating",
-							placeholder: "What do you think the rating should be?",
-							options: generateRatings()
+							type: MessageComponentTypes.ACTION_ROW,
+							id: lastInsertRowid,
+							components: [{
+								type: MessageComponentTypes.STRING_SELECT,
+								custom_id: "user_rating",
+								placeholder: "What do you think the rating should be?",
+								options: generateRatings()
+							}]
+						}, {
+							type: MessageComponentTypes.SECTION,
+							components: [{
+								type: MessageComponentTypes.TEXT_DISPLAY,
+								content: 'Want to remove this from your collection?'
+							}],
+							accessory: {
+								type: MessageComponentTypes.BUTTON,
+								style: ButtonStyleTypes.DANGER,
+								label: 'Remove',
+								custom_id: 'remove_mon'
+							}
 						}]
-					}, {
-						type: MessageComponentTypes.ACTION_ROW,
-						components: [{
-							type: MessageComponentTypes.BUTTON,
-							style: ButtonStyleTypes.DANGER,
-							label: 'Remove',
-							custom_id: 'remove_mon'
-						}]
-					}]
-				},
-			});
+					}
+				})
+			} catch (err) {
+				console.error(err)
+			}
+			return
 		} else if (name === 'clearmons') {
 			const stmt = db.prepare('DELETE FROM collection WHERE user_id=?;')
 			const {changes} = stmt.run(userId)

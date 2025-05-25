@@ -62,7 +62,7 @@ function calculateStars(rating) {
 	return 1;
 }
 
-export default function createEmbed(data) {
+export default function createEmbed(data, id) {
 	return {
 		title: '⭐ '.repeat(calculateStars(data.score)) + data.name,
 		color: colors[data.types[0]],
@@ -73,6 +73,10 @@ export default function createEmbed(data) {
 		}, {
 			name: 'BST',
 			value: data.bst,
+			inline: true
+		}, {
+			name: 'ID Number',
+			value: String(id),
 			inline: true
 		}, {
 			name: 'Moves',

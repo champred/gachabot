@@ -55,21 +55,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				}
 			})
 		} else if (custom_id === 'remove_mon') {
-			const monId = message.components[0].id
-			const stmt = db.prepare('DELETE FROM collection WHERE user_id=? AND id=?;')
-			const {changes} = stmt.run(userId, monId)
-			if (!changes) {
-				return res.send({
-					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-					data: {
-						content: 'You must own this GachaMon to remove it!',
-						flags: InteractionResponseFlags.EPHEMERAL
-					}
-				})
-			}
-			res.send({
-				type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE
-			})
+			removeMon(message.components[0].id)
+			
 			try {
 				await DiscordRequest(`/webhooks/${process.env.APP_ID}/${token}/messages/${message.id}`, {
 					method: 'DELETE'
@@ -77,16 +64,10 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			} catch (err) {
 				console.error(err)
 			}
-			return res.send({
-				type: InteractionResponseType.UPDATE_MESSAGE,
-				data: {
-					content: 'This GachaMon has been removed!',
-					components: []
-				}
-			})
+			return
 		} else if (custom_id === 'view_collection') {
 			userId = message.mentions[0].id
-			const stmt = db.prepare('SELECT gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10;')
+			const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10;')
 			const results = stmt.all(userId)
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -94,7 +75,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			})
 		} else if (custom_id === 'next_page') {
 			userId = message.mentions[0].id
-			const stmt = db.prepare('SELECT gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10 OFFSET ?;')
+			const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=? ORDER BY id LIMIT 10 OFFSET ?;')
 			let page = message.components[0].id
 			const results = stmt.all(userId, (page++) * 10)
 			return res.send({
@@ -135,7 +116,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
 					content: "New GachaMon added!",
-					embeds: [createEmbed(data)],
+					embeds: [createEmbed(data, lastInsertRowid)],
 				}
 			})
 			try {
@@ -171,6 +152,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				console.error(err)
 			}
 			return
+		} else if (name === 'removemon') {
+			removeMon(options[0].value)
 		} else if (name === 'clearmons') {
 			const stmt = db.prepare('DELETE FROM collection WHERE user_id=?;')
 			const {changes} = stmt.run(userId)
@@ -251,6 +234,19 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 
 	console.error('unknown interaction type', type);
 	return res.status(400).json({ error: 'unknown interaction type' });
+
+	function removeMon(monId) {
+		const stmt = db.prepare('DELETE FROM collection WHERE user_id=? AND id=?;')
+		const {changes} = stmt.run(userId, monId)
+		
+		return res.send({
+			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+			data: {
+				content: changes ? 'This GachaMon has been removed!' : 'You must own this GachaMon to remove it!',
+				flags: InteractionResponseFlags.EPHEMERAL
+			}
+		})
+	}
 });
 
 app.listen(PORT, () => {
@@ -259,7 +255,7 @@ app.listen(PORT, () => {
 function pageResults(results, page, userId) {
 	return {
 		content: results.length ? `Page ${page} of <@${userId}>'s GachaMon collection:` : `<@${userId}> has nothing more to see!`,
-		embeds: results.map(r => createEmbed(decodeMon(r.gachamon))),
+		embeds: results.map(r => createEmbed(decodeMon(r.gachamon), r.id)),
 		flags: InteractionResponseFlags.EPHEMERAL,
 		components: [{
 			type: MessageComponentTypes.ACTION_ROW,
@@ -271,6 +267,6 @@ function pageResults(results, page, userId) {
 				custom_id: 'next_page'
 			}]
 		}]
-	};
+	}
 }
 

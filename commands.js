@@ -67,6 +67,18 @@ const CLEAR_COMMAND = {
 	description: 'Clear out your GachaMon collection!'
 }
 
+const REMOVE_COMMAND = {
+	name: 'removemon',
+	type: 1,
+	description: 'Remove a GachaMon from your collection!',
+	options: [{
+		type: 4,
+		name: 'id',
+		description: 'The ID number to remove.',
+		required: true
+	}]
+}
+
 const VIEW_COMMAND = {
 	name: 'collection',
 	type: 1,
@@ -78,4 +90,4 @@ const VIEW_COMMAND = {
 	}]
 }
 
-InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND, CLEAR_COMMAND]);
+InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND, CLEAR_COMMAND, REMOVE_COMMAND]);

@@ -227,15 +227,19 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
-					content: `<@${userId}> is sharing their GachaMon collection!`,
+					flags: InteractionResponseFlags.IS_COMPONENTS_V2,
 					components: [{
-						type: MessageComponentTypes.ACTION_ROW,
+						type: MessageComponentTypes.SECTION,
 						components: [{
+							type: MessageComponentTypes.TEXT_DISPLAY,
+							content: `<@${userId}>'s GachaMon collection:`
+						}],
+						accessory: {
 							type: MessageComponentTypes.BUTTON,
 							style: ButtonStyleTypes.PRIMARY,
 							label: 'View',
 							custom_id: 'view_collection'
-						}]
+						}
 					}]
 				}
 			})

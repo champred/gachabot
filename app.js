@@ -90,21 +90,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			const results = stmt.all(userId)
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: {
-					content: `<@${userId}>'s GachaMon collection:`,
-					embeds: results.map(r => createEmbed(decodeMon(r.gachamon))),
-					flags: InteractionResponseFlags.EPHEMERAL,
-					components: [{
-						type: MessageComponentTypes.ACTION_ROW,
-						id: 1,
-						components: [{
-							type: MessageComponentTypes.BUTTON,
-							style: ButtonStyleTypes.PRIMARY,
-							label: 'See More',
-							custom_id: 'next_page'
-						}]
-					}]
-				}
+				data: pageResults(results, 1, userId)
 			})
 		} else if (custom_id === 'next_page') {
 			userId = message.mentions[0].id
@@ -113,21 +99,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			const results = stmt.all(userId, (page++) * 10)
 			return res.send({
 				type: InteractionResponseType.UPDATE_MESSAGE,
-				data: {
-					content: results.length ? `Page ${page} of <@${userId}>'s GachaMon collection:` : `<@${userId}> has nothing more to see!`,
-					embeds: results.map(r => createEmbed(decodeMon(r.gachamon))),
-					flags: InteractionResponseFlags.EPHEMERAL,
-					components: [{
-						type: MessageComponentTypes.ACTION_ROW,
-						id: page,
-						components: [{
-							type: MessageComponentTypes.BUTTON,
-							style: ButtonStyleTypes.PRIMARY,
-							label: 'See More',
-							custom_id: 'next_page'
-						}]
-					}]
-				}
+				data: pageResults(results, page, userId)
 			})
 		}
 	}
@@ -280,3 +252,21 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 app.listen(PORT, () => {
 	console.log('Listening on port', PORT);
 });
+function pageResults(results, page, userId) {
+	return {
+		content: results.length ? `Page ${page} of <@${userId}>'s GachaMon collection:` : `<@${userId}> has nothing more to see!`,
+		embeds: results.map(r => createEmbed(decodeMon(r.gachamon))),
+		flags: InteractionResponseFlags.EPHEMERAL,
+		components: [{
+			type: MessageComponentTypes.ACTION_ROW,
+			id: page,
+			components: [{
+				type: MessageComponentTypes.BUTTON,
+				style: ButtonStyleTypes.PRIMARY,
+				label: 'See More',
+				custom_id: 'next_page'
+			}]
+		}]
+	};
+}
+

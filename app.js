@@ -18,7 +18,7 @@ const app = express();
 // Get port, or default to 3000
 const PORT = process.env.PORT || 3000;
 
-function generateRatings() {
+const ratings = (() => {
 	let ratings = []
 	for (let i = 1; i <= 5; i++) {
 		ratings.push({
@@ -27,7 +27,7 @@ function generateRatings() {
 		})
 	}
 	return ratings
-}
+})()
 
 app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async function (req, res) {
 	// Interaction id, type and data
@@ -150,7 +150,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 								type: MessageComponentTypes.STRING_SELECT,
 								custom_id: "user_rating",
 								placeholder: "What do you think the rating should be?",
-								options: generateRatings()
+								options: ratings
 							}]
 						}, {
 							type: MessageComponentTypes.SECTION,

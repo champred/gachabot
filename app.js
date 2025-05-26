@@ -206,7 +206,23 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				}
 			})
 		} else if (name === 'collection') {
-			if (options && options[0]) userId = options[0].value
+			if (options) {
+				userId = lookupOption('owner', userId)
+				if (lookupOption('top10', false)) {
+					const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=?;')
+					const results = stmt.all(userId)
+					results.forEach(r => Object.assign(r, decodeMon(r.gachamon)))
+					results.sort((a, b) => b.score - a.score)
+					return res.send({
+						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+						data: {
+							flags: InteractionResponseFlags.EPHEMERAL,
+							content: `<@${userId}>'s top 10 GachaMon:`,
+							embeds: results.slice(0, 10).map(r => createEmbed(r, r.id))
+						}
+					})
+				}
+			}
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
@@ -230,6 +246,11 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 
 		console.error(`unknown command: ${name}`);
 		return res.status(400).json({ error: 'unknown command' });
+
+		function lookupOption(nameKey, defaultValue) {
+			const option = options.find(o => o.name === nameKey)
+			return option ? option.value : defaultValue
+		}
 	}
 
 	console.error('unknown interaction type', type);

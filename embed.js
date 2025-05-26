@@ -75,6 +75,10 @@ export default function createEmbed(data, id) {
 			value: data.bst,
 			inline: true
 		}, {
+			name: 'Rating',
+			value: data.score,
+			inline: true
+		}, {
 			name: 'ID Number',
 			value: String(id),
 			inline: true

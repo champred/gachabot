@@ -87,6 +87,10 @@ const VIEW_COMMAND = {
 		type: 6,
 		name: 'owner',
 		description: 'The user who owns the collection. Defaults to your own.'
+	}, {
+		type: 5,
+		name: 'top10',
+		description: 'Show the top 10 highest rated GachaMon in the collection.'
 	}]
 }
 

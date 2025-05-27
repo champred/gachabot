@@ -79,6 +79,25 @@ const REMOVE_COMMAND = {
 	}]
 }
 
+const RATE_COMMAND = {
+	name: 'ratemon',
+	type: 1,
+	description: 'Rate a GachaMon in your collection!',
+	options: [{
+		type: 4,
+		name: 'id',
+		description: 'The ID number to rate.',
+		required: true
+	}, {
+		type: 4,
+		name: 'stars',
+		description: 'The number of stars (1-5) to rate it as.',
+		min_value: 1,
+		max_value: 5,
+		required: true
+	}]
+}
+
 const VIEW_COMMAND = {
 	name: 'collection',
 	type: 1,
@@ -94,4 +113,4 @@ const VIEW_COMMAND = {
 	}]
 }
 
-InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND, CLEAR_COMMAND, REMOVE_COMMAND]);
+InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND, CLEAR_COMMAND, REMOVE_COMMAND, RATE_COMMAND]);

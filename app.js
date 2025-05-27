@@ -43,17 +43,9 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 	if (type === InteractionType.MESSAGE_COMPONENT) {
 		const { custom_id, values } = data;
 		if (custom_id === 'user_rating') {
-			const [score] = values;
+			const [score] = values
 			const monId = message.components[0].id
-			const stmt = db.prepare('INSERT OR REPLACE INTO ratings(user_id,mon_id,score) VALUES(?,?,?);')
-			const { changes } = stmt.run(userId, monId, score)
-			return res.send({
-				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: {
-					content: changes ? `Your response of ${'⭐'.repeat(score)} has been recorded.` : 'There has been an error.',
-					flags: InteractionResponseFlags.EPHEMERAL
-				}
-			})
+			return rateMon(monId, score)
 		} else if (custom_id === 'remove_mon') {
 			removeMon(message.components[0].id)
 			try {
@@ -153,6 +145,10 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			return
 		} else if (name === 'removemon') {
 			return removeMon(lookupOption('id', -1))	
+		} else if (name === 'ratemon') {
+			let score = lookupOption('stars')
+			const monId = lookupOption('id')
+			return rateMon(monId, score)
 		} else if (name === 'clearmons') {
 			const stmt = db.prepare('DELETE FROM collection WHERE user_id=?;')
 			const {changes} = stmt.run(userId)
@@ -262,6 +258,29 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 	console.error('unknown interaction type', type);
 	return res.status(400).json({ error: 'unknown interaction type' });
 
+	function rateMon(monId, score) {
+		try {
+			const stmt = db.prepare('INSERT OR REPLACE INTO ratings(user_id,mon_id,score) VALUES(?,?,?);')
+			stmt.run(userId, monId, score)
+		} catch (err) {
+			console.error(err)
+			return res.send({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					content: `The ID ${monId} doesn't exist.`,
+					flags: InteractionResponseFlags.EPHEMERAL
+				}
+			})
+		}
+		return res.send({
+			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+			data: {
+				content: `Your response of ${'⭐'.repeat(score)} has been recorded.`,
+				flags: InteractionResponseFlags.EPHEMERAL
+			}
+		})
+	}
+
 	function removeMon(monId) {
 		const stmt = db.prepare('DELETE FROM collection WHERE user_id=? AND id=?;')
 		const {changes} = stmt.run(userId, monId)
@@ -274,7 +293,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			}
 		})
 	}
-	
+
 	function pageResults(results, page) {
 		return {
 			content: results.length ? `Page ${page} of <@${userId}>'s GachaMon collection:` : `<@${userId}> has nothing more to see!`,

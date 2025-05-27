@@ -56,7 +56,6 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			})
 		} else if (custom_id === 'remove_mon') {
 			removeMon(message.components[0].id)
-			
 			try {
 				await DiscordRequest(`/webhooks/${process.env.APP_ID}/${token}/messages/${message.id}`, {
 					method: 'DELETE'
@@ -71,7 +70,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			const results = stmt.all(userId)
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: pageResults(results, 1, userId)
+				data: pageResults(results, 1)
 			})
 		} else if (custom_id === 'next_page') {
 			userId = message.mentions[0].id
@@ -80,7 +79,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			const results = stmt.all(userId, (page++) * 10)
 			return res.send({
 				type: InteractionResponseType.UPDATE_MESSAGE,
-				data: pageResults(results, page, userId)
+				data: pageResults(results, page)
 			})
 		}
 	}
@@ -89,7 +88,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		const { name, resolved, options } = data;
 
 		if (name === 'addmon') {
-			const buf = Buffer.from(options[0].value, 'base64')
+			const buf = Buffer.from(lookupOption('code', ''), 'base64')
 			const data = decodeMon(buf)
 			if (!data) {
 				return res.send({
@@ -153,7 +152,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			}
 			return
 		} else if (name === 'removemon') {
-			removeMon(options[0].value)
+			return removeMon(lookupOption('id', -1))	
 		} else if (name === 'clearmons') {
 			const stmt = db.prepare('DELETE FROM collection WHERE user_id=?;')
 			const {changes} = stmt.run(userId)
@@ -275,26 +274,23 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			}
 		})
 	}
-});
-
-app.listen(PORT, () => {
-	console.log('Listening on port', PORT);
-});
-function pageResults(results, page, userId) {
-	return {
-		content: results.length ? `Page ${page} of <@${userId}>'s GachaMon collection:` : `<@${userId}> has nothing more to see!`,
-		embeds: results.map(r => createEmbed(decodeMon(r.gachamon), r.id)),
-		flags: InteractionResponseFlags.EPHEMERAL,
-		components: [{
-			type: MessageComponentTypes.ACTION_ROW,
-			id: page,
+	
+	function pageResults(results, page) {
+		return {
+			content: results.length ? `Page ${page} of <@${userId}>'s GachaMon collection:` : `<@${userId}> has nothing more to see!`,
+			embeds: results.map(r => createEmbed(decodeMon(r.gachamon), r.id)),
+			flags: InteractionResponseFlags.EPHEMERAL,
 			components: [{
-				type: MessageComponentTypes.BUTTON,
-				style: ButtonStyleTypes.PRIMARY,
-				label: 'See More',
-				custom_id: 'next_page'
+				type: MessageComponentTypes.ACTION_ROW,
+				id: page,
+				components: [{
+					type: MessageComponentTypes.BUTTON,
+					style: ButtonStyleTypes.PRIMARY,
+					label: 'See More',
+					custom_id: 'next_page'
+				}]
 			}]
-		}]
+		}
 	}
-}
-
+})
+app.listen(PORT, () => console.log('Listening on port', PORT))

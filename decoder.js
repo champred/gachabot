@@ -87,16 +87,13 @@ function binaryUnpack(format, stream, pos = 0) {
 	return vars;
 }
 
-let formats = []
-formats[1] = "BIHBBBHBBBIIII"
-
-export default function decodeMon(dec, pos = 0) {
-	let data
-	try {
-		const [version] = binaryUnpack("B", dec)
-		const unp = binaryUnpack(formats[version], dec, pos)
-		data = {
-			version: version,
+const formats = [{}, {
+	format: "BIHBBBHBBBIIII",
+	size: 31,
+	reader(stream, pos) {
+		const unp = binaryUnpack(this.format, stream, pos)
+		return {
+			size: this.size,
 			species: unp[2] & 0x7ff,
 			hp: unp[10] & 0x3ff,
 			lv: unp[3] & 0x7f,
@@ -122,6 +119,15 @@ export default function decodeMon(dec, pos = 0) {
 				(unp[13] & (0x1f << 16)) >> 16//day
 			)
 		}
+	}
+}]
+
+export default function decodeMon(stream, pos = 0) {
+	let data
+	try {
+		const [version] = binaryUnpack("B", stream)
+		data = formats[version].reader(stream, pos)
+		data.version = version
 		data.bst = pokemon[data.species - 1].bst
 		data.types = pokemon[data.species - 1].types
 		data.name = pokemon[data.species - 1].name

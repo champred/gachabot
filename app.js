@@ -191,9 +191,16 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				})
 			}
 			let collection = []
-			for (let pos = 0; pos < size; pos += 31) { //TODO don't hardcode
+			for (let pos = 0; pos < size;) {
 				const mon = decodeMon(buf, pos)
-				if (mon) collection.push(userId, buf.subarray(pos, pos + 31))
+				if (mon) collection.push(userId, buf.subarray(pos, pos += mon.size))
+				else return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: "There was a problem reading the file!"
+					}
+				})
 			}
 			const stmt = db.prepare(`INSERT OR IGNORE INTO collection(user_id,gachamon)
 				VALUES ${'(?,?),'.repeat(collection.length).slice(0, -1)};`)

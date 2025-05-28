@@ -105,7 +105,7 @@ const VIEW_COMMAND = {
 	options: [{
 		type: 1,
 		name: 'view',
-		description: 'Share the entire collection.',
+		description: 'Share a button that enables viewing the collection.',
 		options: [{
 			type: 6,
 			name: 'owner',
@@ -139,4 +139,11 @@ const VIEW_COMMAND = {
 	}]
 }
 
-InstallGlobalCommands(process.env.APP_ID, [ADD_COMMAND, VIEW_COMMAND, FILE_COMMAND, CLEAR_COMMAND, REMOVE_COMMAND, RATE_COMMAND]);
+InstallGlobalCommands(process.env.APP_ID, [
+	ADD_COMMAND,
+	VIEW_COMMAND,
+	FILE_COMMAND,
+	CLEAR_COMMAND,
+	REMOVE_COMMAND,
+	RATE_COMMAND,
+]);

@@ -5,6 +5,7 @@ This is a Discord bot that integrates with the [GachaMon](https://github.com/bes
 * `/addmon <code>` adds a GachaMon to your collection using the shareable code string from the tracker.
 * `/addmons <file>` takes a `.gccg` file from your tracker's `gachamon` folder and adds all of the entries to your collection.
 * `/removemon <id>` removes the GachaMon with the specified ID number from your collection.
+* `/ratemon <id> <stars>` rate the GachaMon with the specified ID number from 1-5 stars. This doesn't affect the actual rating. In the future these ratings may be used for aggregate purposes.
 * `/clearmons` removes all GachaMon from your collection.
 * `/collection view <@user> <top10>` shares a user's collection. If no user is specified, defaults to the sender. If `top10` is true, shows the 10 highest rated GachaMon in descending order.
 * `/collection search <@user> <species> <ability> <move>` searches a user's collection for certain GachaMon. If no user is specified, defaults to the sender.

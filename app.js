@@ -229,6 +229,19 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 						embeds: results.slice(0, 10).map(r => createEmbed(r, r.id))
 					}
 				})
+			} else if (options[0].name === 'ratings') {
+				const stmt = db.prepare(`SELECT mon_id, gachamon, score AS rating FROM collection, ratings
+					WHERE ratings.user_id=? AND mon_id=collection.id ORDER BY ratings.id DESC LIMIT 10;`)
+				const results = stmt.all(userId)
+				results.forEach(r => Object.assign(r, decodeMon(r.gachamon)))
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: `<@${userId}>'s recent ratings:`,
+						embeds: results.map(r => createEmbed(r, r.mon_id, r.rating))
+					}
+				})
 			} else if (lookupOption('top10', false)) {
 				const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=?;')
 				const results = stmt.all(userId)

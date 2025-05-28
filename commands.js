@@ -136,6 +136,15 @@ const VIEW_COMMAND = {
 			name: 'move',
 			description: 'The name of the Pokémon move to search for.'
 		}]
+	}, {
+		type: 1,
+		name: 'ratings',
+		description: 'Display the last 10 ratings left by someone.',
+		options: [{
+			type: 6,
+			name: 'owner',
+			description: 'The user who left the ratings. Defaults to yourself.'
+		}]
 	}]
 }
 

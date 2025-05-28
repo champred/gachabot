@@ -62,9 +62,10 @@ function calculateStars(score) {
 	return 1
 }
 
-export default function createEmbed(data, id) {
+export default function createEmbed(data, id, rating) {
+	const stars = rating || calculateStars(data.score)
 	return {
-		title: '⭐ '.repeat(calculateStars(data.score)) + data.name,
+		title: '⭐ '.repeat(stars) + data.name,
 		color: colors[data.types[0]],
 		fields: [{
 			name: 'Ability',

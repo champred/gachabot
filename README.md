@@ -9,6 +9,7 @@ This is a Discord bot that integrates with the [GachaMon](https://github.com/bes
 * `/clearmons` removes all GachaMon from your collection.
 * `/collection view <@user> <top10>` shares a user's collection. If no user is specified, defaults to the sender. If `top10` is true, shows the 10 highest rated GachaMon in descending order.
 * `/collection search <@user> <species> <ability> <move>` searches a user's collection for certain GachaMon. If no user is specified, defaults to the sender.
+* `/collection ratings <@user>` shows a user's 10 most recent ratings. If no user is specified, defaults to the sender.
 
 ## Installation
 

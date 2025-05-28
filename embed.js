@@ -53,13 +53,13 @@ function formatStats(data) {
 	return spread.join(' | ')
 }
 
-function calculateStars(rating) {
-	if (rating >= 80) return 6;
-	if (rating >= 67) return 5;
-	if (rating >= 54) return 4;
-	if (rating >= 40) return 3;
-	if (rating >= 25) return 2;
-	return 1;
+function calculateStars(score) {
+	if (score >= 80) return 6
+	if (score >= 67) return 5
+	if (score >= 54) return 4
+	if (score >= 40) return 3
+	if (score >= 25) return 2
+	return 1
 }
 
 export default function createEmbed(data, id) {

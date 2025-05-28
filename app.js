@@ -1,5 +1,5 @@
-import 'dotenv/config';
-import express from 'express';
+import 'dotenv/config'
+import express from 'express'
 import {
 	ButtonStyleTypes,
 	InteractionResponseFlags,
@@ -7,16 +7,16 @@ import {
 	InteractionType,
 	MessageComponentTypes,
 	verifyKeyMiddleware,
-} from 'discord-interactions';
+} from 'discord-interactions'
 import createEmbed from './embed.js'
 import decodeMon from './decoder.js'
 import {db} from './db.js'
-import DiscordRequest from './commands.js';
+import DiscordRequest from './commands.js'
 
 // Create an express app
-const app = express();
+const app = express()
 // Get port, or default to 3000
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000
 
 const ratings = (() => {
 	let ratings = []
@@ -31,17 +31,18 @@ const ratings = (() => {
 
 app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async function (req, res) {
 	// Interaction id, type and data
-	const { token, type, data, message } = req.body;
-	let userId = req.body.context === 0 ? req.body.member.user.id : req.body.user.id;
+	const { token, type, data, message } = req.body
+	let userId = req.body.context === 0 ? req.body.member.user.id : req.body.user.id
 	/**
 	 * Handle verification requests
 	 */
 	if (type === InteractionType.PING) {
-		return res.send({ type: InteractionResponseType.PONG });
+		return res.send({ type: InteractionResponseType.PONG })
 	}
 
 	if (type === InteractionType.MESSAGE_COMPONENT) {
-		const { custom_id, values } = data;
+		const { custom_id, values } = data
+
 		if (custom_id === 'user_rating') {
 			const [score] = values
 			const monId = message.components[0].id
@@ -77,7 +78,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 	}
 
 	if (type === InteractionType.APPLICATION_COMMAND) {
-		const { name, resolved, options } = data;
+		const { name, resolved, options } = data
 
 		if (name === 'addmon') {
 			const buf = Buffer.from(lookupOption('code', ''), 'base64')
@@ -246,8 +247,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			})
 		}
 
-		console.error(`unknown command: ${name}`);
-		return res.status(400).json({ error: 'unknown command' });
+		console.error(`unknown command: ${name}`)
+		return res.status(400).json({ error: 'unknown command' })
 
 		function lookupOption(nameKey, defaultValue) {
 			const option = options.find(o => o.name === nameKey)
@@ -255,8 +256,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		}
 	}
 
-	console.error('unknown interaction type', type);
-	return res.status(400).json({ error: 'unknown interaction type' });
+	console.error('unknown interaction type', type)
+	return res.status(400).json({ error: 'unknown interaction type' })
 
 	function rateMon(monId, score) {
 		try {

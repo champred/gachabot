@@ -103,13 +103,39 @@ const VIEW_COMMAND = {
 	type: 1,
 	description: 'Access a collection of GachaMon for viewing!',
 	options: [{
-		type: 6,
-		name: 'owner',
-		description: 'The user who owns the collection. Defaults to your own.'
+		type: 1,
+		name: 'view',
+		description: 'Share the entire collection.',
+		options: [{
+			type: 6,
+			name: 'owner',
+			description: 'The user who owns the collection. Defaults to your own.'
+		}, {
+			type: 5,
+			name: 'top10',
+			description: 'Show the top 10 highest rated GachaMon in the collection.'
+		}]
 	}, {
-		type: 5,
-		name: 'top10',
-		description: 'Show the top 10 highest rated GachaMon in the collection.'
+		type: 1,
+		name: 'search',
+		description: 'Filter the collection to only contain certain results.',
+		options: [{
+			type: 6,
+			name: 'owner',
+			description: 'The user who owns the collection. Defaults to your own.'
+		}, {
+			type: 3,
+			name: 'species',
+			description: 'The name of the Pokémon species to search for.'
+		}, {
+			type: 3,
+			name: 'ability',
+			description: 'The name of the Pokémon ability to search for.'
+		}, {
+			type: 3,
+			name: 'move',
+			description: 'The name of the Pokémon move to search for.'
+		}]
 	}]
 }
 

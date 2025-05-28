@@ -81,7 +81,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		const { name, resolved, options } = data
 
 		if (name === 'addmon') {
-			const buf = Buffer.from(lookupOption('code', ''), 'base64')
+			const buf = Buffer.from(lookupOption('code'), 'base64')
 			const data = decodeMon(buf)
 			if (!data) {
 				return res.send({
@@ -145,7 +145,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			}
 			return
 		} else if (name === 'removemon') {
-			return removeMon(lookupOption('id', -1))	
+			return removeMon(lookupOption('id'))	
 		} else if (name === 'ratemon') {
 			let score = lookupOption('stars')
 			const monId = lookupOption('id')
@@ -209,22 +209,39 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 				}
 			})
 		} else if (name === 'collection') {
-			if (options) {
-				userId = lookupOption('owner', userId)
-				if (lookupOption('top10', false)) {
-					const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=?;')
-					const results = stmt.all(userId)
-					results.forEach(r => Object.assign(r, decodeMon(r.gachamon)))
-					results.sort((a, b) => b.score - a.score)
-					return res.send({
-						type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							flags: InteractionResponseFlags.EPHEMERAL,
-							content: `<@${userId}>'s top 10 GachaMon:`,
-							embeds: results.slice(0, 10).map(r => createEmbed(r, r.id))
-						}
-					})
-				}
+			userId = lookupOption('owner', userId)
+			if (options[0].name === 'search') {
+				const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=?;')
+				let results = stmt.all(userId)
+				results.forEach(r => Object.assign(r, decodeMon(r.gachamon)))
+				const species = lookupOption('species', '').toLowerCase()
+				const ability = lookupOption('ability', '').toLowerCase()
+				const move = lookupOption('move', '').toLowerCase()
+				results = results.filter(r => r.name.toLowerCase().includes(species) &&
+									r.ability.toLowerCase().includes(ability) &&
+									r.moves.some(m => m && m.toLowerCase().includes(move))
+				)
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: 'Search results:',
+						embeds: results.slice(0, 10).map(r => createEmbed(r, r.id))
+					}
+				})
+			} else if (lookupOption('top10', false)) {
+				const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=?;')
+				const results = stmt.all(userId)
+				results.forEach(r => Object.assign(r, decodeMon(r.gachamon)))
+				results.sort((a, b) => b.score - a.score)
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: `<@${userId}>'s top 10 GachaMon:`,
+						embeds: results.slice(0, 10).map(r => createEmbed(r, r.id))
+					}
+				})
 			}
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -250,8 +267,12 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 		console.error(`unknown command: ${name}`)
 		return res.status(400).json({ error: 'unknown command' })
 
-		function lookupOption(nameKey, defaultValue) {
-			const option = options.find(o => o.name === nameKey)
+		function lookupOption(nameKey, defaultValue, opt=options) {
+			if (opt.length === 0)//no options
+				return defaultValue
+			if (opt[0].options)//subcommand
+				return lookupOption(nameKey, defaultValue, opt[0].options)
+			const option = opt.find(o => o.name === nameKey)
 			return option ? option.value : defaultValue
 		}
 	}

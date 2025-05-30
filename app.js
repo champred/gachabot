@@ -200,12 +200,12 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			}
 			const stmt = db.prepare(`INSERT OR IGNORE INTO collection(user_id,gachamon)
 				VALUES ${'(?,?),'.repeat(collection.length).slice(0, -1)};`)
-			stmt.run(...collection)
+			const {changes} = stmt.run(...collection)
 			return res.send({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
 					flags: InteractionResponseFlags.EPHEMERAL,
-					content: "Added GachaMon from file!"
+					content: `Added ${changes} GachaMon from file!`
 				}
 			})
 		} else if (name === 'collection') {

@@ -145,6 +145,10 @@ const VIEW_COMMAND = {
 			name: 'owner',
 			description: 'The user who left the ratings. Defaults to yourself.'
 		}]
+	}, {
+		type: 1,
+		name: 'list',
+		description: 'Lists all users who have a GachaMon collection.',
 	}]
 }
 

@@ -242,6 +242,17 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 						embeds: results.map(r => createEmbed(r, r.mon_id, r.rating))
 					}
 				})
+			} else if (options[0].name === 'list') {
+				const stmt = db.prepare('SELECT DISTINCT user_id FROM collection;')
+				stmt.setReadBigInts(true)
+				const results = stmt.all()
+				return res.send({
+					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+					data: {
+						flags: InteractionResponseFlags.EPHEMERAL,
+						content: results.map(r => `<@${r.user_id}>`).join()
+					}
+				})
 			} else if (lookupOption('top10', false)) {
 				const stmt = db.prepare('SELECT id, gachamon FROM collection WHERE user_id=?;')
 				const results = stmt.all(userId)
